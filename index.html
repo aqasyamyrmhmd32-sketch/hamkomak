@@ -4,13 +4,45 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#090d25">
-  <title>همکمک ۲.۴ | دستیار یادگیری چندپایه‌ای</title>
+  <title>همکمک ۲.۴ | پایهٔ هفتم</title>
   <style>
     html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #070b1d; }
     iframe { display: block; width: 100%; height: 100%; border: 0; }
   </style>
 </head>
 <body>
-  <iframe title="وب‌سایت همکمک" src="./Hamkomak_2_4_Grades_1_to_7_Coding-1.html"></iframe>
+  <iframe id="hamkomakApp" title="وب‌سایت همکمک پایهٔ هفتم" src="./Hamkomak_2_4_Grades_1_to_7_Coding-1.html"></iframe>
+  <script>
+    const appFrame = document.getElementById("hamkomakApp");
+    appFrame.addEventListener("load", () => {
+      try {
+        const appDocument = appFrame.contentDocument;
+        const gradeSelect = appDocument.getElementById("gradeSelect");
+        if (gradeSelect) {
+          Array.from(gradeSelect.options).forEach(option => {
+            if (option.value !== "7") option.remove();
+          });
+          gradeSelect.value = "7";
+          gradeSelect.disabled = true;
+          gradeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+
+        const webGrade = appDocument.getElementById("webGrade");
+        if (webGrade) {
+          Array.from(webGrade.options).forEach(option => {
+            if (option.value !== "هفتم") option.remove();
+          });
+          webGrade.value = "هفتم";
+          webGrade.disabled = true;
+          webGrade.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+
+        const notice = appDocument.getElementById("gradeNotice");
+        if (notice) notice.textContent = "پایهٔ هفتم فعال است. محتوای این سایت ویژهٔ کلاس هفتم است.";
+      } catch (error) {
+        console.error("امکان تنظیم پایهٔ هفتم فراهم نشد.", error);
+      }
+    });
+  </script>
 </body>
 </html>
