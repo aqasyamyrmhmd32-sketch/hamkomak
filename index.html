@@ -6,17 +6,92 @@
   <meta name="theme-color" content="#090d25">
   <title>همکمک ۲.۴ | پایهٔ هفتم</title>
   <style>
+    * { box-sizing: border-box; }
     html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #070b1d; }
     iframe { display: block; width: 100%; height: 100%; border: 0; }
+    .zoom-controls {
+      position: fixed;
+      z-index: 20;
+      top: max(10px, env(safe-area-inset-top));
+      left: max(10px, env(safe-area-inset-left));
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      color: #eef2ff;
+      background: rgba(8, 15, 40, .94);
+      border: 1px solid rgba(123, 234, 255, .45);
+      border-radius: 14px;
+      box-shadow: 0 6px 22px rgba(0, 0, 0, .35);
+      font: 14px Tahoma, sans-serif;
+      backdrop-filter: blur(8px);
+    }
+    .zoom-controls label { white-space: nowrap; }
+    .zoom-controls input[type="range"] { width: 112px; accent-color: #20d9e8; }
+    .zoom-controls output { min-width: 42px; text-align: center; direction: ltr; }
+    .zoom-controls button {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 7px;
+      color: #eefbff;
+      background: #17254b;
+      border: 1px solid #405582;
+      border-radius: 9px;
+      font: inherit;
+      cursor: pointer;
+    }
+    .zoom-controls button:hover { background: #243765; }
+    .zoom-controls button:focus-visible,
+    .zoom-controls input:focus-visible { outline: 3px solid #70f3ff; outline-offset: 2px; }
+    @media (max-width: 480px) {
+      .zoom-controls { gap: 5px; padding: 6px 7px; font-size: 12px; }
+      .zoom-controls input[type="range"] { width: 82px; }
+      .zoom-controls button { min-width: 29px; height: 29px; }
+    }
   </style>
 </head>
 <body>
+  <div class="zoom-controls" role="group" aria-label="تنظیم اندازهٔ صفحه">
+    <label for="zoomRange">اندازهٔ صفحه</label>
+    <button id="zoomOut" type="button" aria-label="کوچک‌تر کردن صفحه">−</button>
+    <input id="zoomRange" type="range" min="70" max="120" step="5" value="100" aria-label="بزرگ‌نمایی صفحه">
+    <button id="zoomIn" type="button" aria-label="بزرگ‌تر کردن صفحه">+</button>
+    <output id="zoomValue" for="zoomRange">100٪</output>
+    <button id="zoomReset" type="button" aria-label="بازگردانی اندازه به ۱۰۰ درصد">↺</button>
+  </div>
+
   <iframe id="hamkomakApp" title="وب‌سایت همکمک پایهٔ هفتم" src="./Hamkomak_2_4_Grades_1_to_7_Coding-1.html"></iframe>
   <script>
     const appFrame = document.getElementById("hamkomakApp");
+    const zoomRange = document.getElementById("zoomRange");
+    const zoomValue = document.getElementById("zoomValue");
+    const ZOOM_KEY = "hamkomak_site_zoom_v1";
+    let appDocument = null;
+
+    function setZoom(value) {
+      const zoom = Math.min(120, Math.max(70, Number(value) || 100));
+      zoomRange.value = String(zoom);
+      zoomValue.value = `${zoom}٪`;
+      zoomValue.textContent = `${zoom}٪`;
+      try { localStorage.setItem(ZOOM_KEY, String(zoom)); } catch (error) {}
+      if (appDocument) appDocument.documentElement.style.zoom = `${zoom}%`;
+    }
+
+    zoomRange.addEventListener("input", () => setZoom(zoomRange.value));
+    document.getElementById("zoomOut").addEventListener("click", () => setZoom(Number(zoomRange.value) - 5));
+    document.getElementById("zoomIn").addEventListener("click", () => setZoom(Number(zoomRange.value) + 5));
+    document.getElementById("zoomReset").addEventListener("click", () => setZoom(100));
+
+    try {
+      const savedZoom = localStorage.getItem(ZOOM_KEY);
+      if (savedZoom) setZoom(savedZoom);
+    } catch (error) {}
+
     appFrame.addEventListener("load", () => {
       try {
-        const appDocument = appFrame.contentDocument;
+        appDocument = appFrame.contentDocument;
+        appDocument.documentElement.style.zoom = `${zoomRange.value}%`;
+
         const gradeSelect = appDocument.getElementById("gradeSelect");
         if (gradeSelect) {
           Array.from(gradeSelect.options).forEach(option => {
