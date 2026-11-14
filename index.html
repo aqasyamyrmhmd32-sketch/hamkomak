@@ -43,10 +43,142 @@
     .zoom-controls button:hover { background: #243765; }
     .zoom-controls button:focus-visible,
     .zoom-controls input:focus-visible { outline: 3px solid #70f3ff; outline-offset: 2px; }
+
+    .qr-toggle {
+      position: fixed;
+      z-index: 21;
+      top: max(74px, calc(env(safe-area-inset-top) + 74px));
+      left: max(10px, env(safe-area-inset-left));
+      min-width: 120px;
+      padding: 10px 14px;
+      border: 1px solid rgba(116, 233, 255, .52);
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(19, 36, 82, .96), rgba(31, 123, 145, .92));
+      color: #eefbff;
+      font: 700 14px Tahoma, sans-serif;
+      box-shadow: 0 8px 22px rgba(0,0,0,.28);
+      cursor: pointer;
+    }
+
+    .qr-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(4, 7, 18, .72);
+      backdrop-filter: blur(4px);
+      padding: 18px;
+    }
+
+    .qr-modal.hidden { display: none; }
+
+    .qr-card {
+      width: min(420px, 92vw);
+      background: linear-gradient(180deg, rgba(17, 25, 52, .98), rgba(20, 31, 74, .95));
+      border: 1px solid rgba(138, 190, 255, .34);
+      border-radius: 22px;
+      box-shadow: 0 18px 44px rgba(0,0,0,.38);
+      overflow: hidden;
+    }
+
+    .qr-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid rgba(157, 181, 255, .18);
+      color: #ebf5ff;
+    }
+
+    .qr-head h3 {
+      margin: 0;
+      font: 700 20px Tahoma, sans-serif;
+    }
+
+    .qr-close {
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(194, 218, 255, .28);
+      border-radius: 10px;
+      background: rgba(255,255,255,.04);
+      color: white;
+      cursor: pointer;
+      font: 700 22px Tahoma, sans-serif;
+    }
+
+    .qr-body {
+      padding: 12px 16px 10px;
+    }
+
+    .qr-stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: #090e1d;
+      border: 1px solid rgba(105, 146, 255, .3);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    #qrVideo, #qrCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #0b142e;
+    }
+
+    #qrCanvas {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .qr-status {
+      margin: 12px 0 0;
+      color: #dfeaff;
+      font: 14px Tahoma, sans-serif;
+      line-height: 1.7;
+      min-height: 48px;
+    }
+
+    .qr-actions {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px 16px;
+      flex-wrap: wrap;
+    }
+
+    .qr-actions button {
+      flex: 1;
+      min-height: 42px;
+      border: 0;
+      border-radius: 12px;
+      cursor: pointer;
+      font: 700 14px Tahoma, sans-serif;
+    }
+
+    .qr-actions .primary {
+      background: linear-gradient(120deg, #5d5cff, #15b7d8);
+      color: white;
+    }
+
+    .qr-actions .secondary {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(185, 206, 255, .25);
+      color: #edf7ff;
+    }
+
     @media (max-width: 480px) {
       .zoom-controls { gap: 5px; padding: 6px 7px; font-size: 12px; }
       .zoom-controls input[type="range"] { width: 82px; }
       .zoom-controls button { min-width: 29px; height: 29px; }
+      .qr-toggle { top: max(72px, calc(env(safe-area-inset-top) + 72px)); }
+      .qr-head h3 { font-size: 18px; }
     }
   </style>
 </head>
@@ -60,7 +192,30 @@
     <button id="zoomReset" type="button" aria-label="بازگردانی اندازه به ۱۰۰ درصد">↺</button>
   </div>
 
+  <button class="qr-toggle" id="qrToggle" type="button">📷 اسکن QR</button>
+
+  <div class="qr-modal hidden" id="qrModal" aria-modal="true" role="dialog" aria-labelledby="qrDialogTitle">
+    <div class="qr-card">
+      <div class="qr-head">
+        <h3 id="qrDialogTitle">اسکن QR</h3>
+        <button class="qr-close" id="closeQrModal" type="button" aria-label="بستن اسکنر">✕</button>
+      </div>
+      <div class="qr-body">
+        <div class="qr-stage">
+          <video id="qrVideo" autoplay playsinline muted></video>
+          <canvas id="qrCanvas" width="320" height="320"></canvas>
+        </div>
+        <p id="qrStatus" class="qr-status">دوربین را روشن کن و کد QR را در داخل کادر نگه دار.</p>
+      </div>
+      <div class="qr-actions">
+        <button type="button" class="primary" id="startQrScan">شروع اسکن</button>
+        <button type="button" class="secondary" id="stopQrScan">توقف</button>
+      </div>
+    </div>
+  </div>
+
   <iframe id="hamkomakApp" title="وب‌سایت همکمک پایهٔ هفتم" src="./Hamkomak_2_4_Grades_1_to_7_Coding-1.html"></iframe>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <script>
     const appFrame = document.getElementById("hamkomakApp");
     const zoomRange = document.getElementById("zoomRange");
@@ -117,6 +272,109 @@
       } catch (error) {
         console.error("امکان تنظیم پایهٔ هفتم فراهم نشد.", error);
       }
+    });
+
+    const qrModal = document.getElementById("qrModal");
+    const qrToggle = document.getElementById("qrToggle");
+    const closeQrModal = document.getElementById("closeQrModal");
+    const startQrScan = document.getElementById("startQrScan");
+    const stopQrScan = document.getElementById("stopQrScan");
+    const qrVideo = document.getElementById("qrVideo");
+    const qrCanvas = document.getElementById("qrCanvas");
+    const qrStatus = document.getElementById("qrStatus");
+    const ctx = qrCanvas.getContext("2d");
+    let qrStream = null;
+    let qrInterval = null;
+    let lastQrResult = null;
+
+    function openQrModal() {
+      qrModal.classList.remove("hidden");
+    }
+
+    function closeQrModalUI() {
+      qrModal.classList.add("hidden");
+      stopQrScanner();
+    }
+
+    function updateQrStatus(message) {
+      qrStatus.textContent = message;
+    }
+
+    function stopQrScanner() {
+      if (qrInterval) {
+        clearInterval(qrInterval);
+        qrInterval = null;
+      }
+      if (qrStream) {
+        qrStream.getTracks().forEach(track => track.stop());
+        qrStream = null;
+      }
+      if (qrVideo) {
+        qrVideo.srcObject = null;
+      }
+      lastQrResult = null;
+    }
+
+    async function startQrScanner() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        updateQrStatus("دستگاه شما اجازهٔ استفاده از دوربین را ندارد. لطفاً از مرورگرهای Chrome یا Edge استفاده کن.");
+        return;
+      }
+
+      try {
+        qrStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "environment",
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
+        });
+
+        qrVideo.srcObject = qrStream;
+        qrVideo.play();
+        updateQrStatus("دوربین روشن شد. QR code را در کادر قرار بده.");
+
+        qrInterval = setInterval(() => {
+          if (!qrVideo.videoWidth || !qrVideo.videoHeight) return;
+          qrCanvas.width = qrVideo.videoWidth;
+          qrCanvas.height = qrVideo.videoHeight;
+          ctx.drawImage(qrVideo, 0, 0, qrCanvas.width, qrCanvas.height);
+          const imageData = ctx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
+          const code = window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+          if (code && code.data) {
+            if (lastQrResult !== code.data) {
+              lastQrResult = code.data;
+              updateQrStatus(`کد پیدا شد: ${code.data}`);
+              if (code.data.startsWith("http://") || code.data.startsWith("https://")) {
+                window.open(code.data, "_blank", "noopener,noreferrer");
+              }
+              setTimeout(() => {
+                stopQrScanner();
+                closeQrModalUI();
+              }, 1500);
+            }
+          }
+        }, 250);
+      } catch (error) {
+        updateQrStatus("امکان دسترسی به دوربین وجود ندارد. اجازهٔ دوربین را فعال کن یا مرورگر را مجدداً باز کن.");
+        console.error("QR scan error:", error);
+      }
+    }
+
+    qrToggle.addEventListener("click", () => {
+      openQrModal();
+      startQrScanner();
+    });
+
+    closeQrModal.addEventListener("click", closeQrModalUI);
+    startQrScan.addEventListener("click", startQrScanner);
+    stopQrScan.addEventListener("click", () => {
+      stopQrScanner();
+      updateQrStatus("اسکن متوقف شد. دوباره شروع کن.");
+    });
+
+    qrModal.addEventListener("click", (event) => {
+      if (event.target === qrModal) closeQrModalUI();
     });
   </script>
 </body>
