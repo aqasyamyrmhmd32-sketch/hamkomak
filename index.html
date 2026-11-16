@@ -1,381 +1,831 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#090d25">
-  <title>همکمک ۲.۴ | پایهٔ هفتم</title>
-  <style>
-    * { box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #070b1d; }
-    iframe { display: block; width: 100%; height: 100%; border: 0; }
-    .zoom-controls {
-      position: fixed;
-      z-index: 20;
-      top: max(10px, env(safe-area-inset-top));
-      left: max(10px, env(safe-area-inset-left));
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      color: #eef2ff;
-      background: rgba(8, 15, 40, .94);
-      border: 1px solid rgba(123, 234, 255, .45);
-      border-radius: 14px;
-      box-shadow: 0 6px 22px rgba(0, 0, 0, .35);
-      font: 14px Tahoma, sans-serif;
-      backdrop-filter: blur(8px);
-    }
-    .zoom-controls label { white-space: nowrap; }
-    .zoom-controls input[type="range"] { width: 112px; accent-color: #20d9e8; }
-    .zoom-controls output { min-width: 42px; text-align: center; direction: ltr; }
-    .zoom-controls button {
-      min-width: 32px;
-      height: 32px;
-      padding: 0 7px;
-      color: #eefbff;
-      background: #17254b;
-      border: 1px solid #405582;
-      border-radius: 9px;
-      font: inherit;
-      cursor: pointer;
-    }
-    .zoom-controls button:hover { background: #243765; }
-    .zoom-controls button:focus-visible,
-    .zoom-controls input:focus-visible { outline: 3px solid #70f3ff; outline-offset: 2px; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1f5eff" />
+    <meta
+      name="description"
+      content="همکمک؛ فضایی برای همکاری، کمک‌کردن و رشد در کنار هم."
+    />
+    <title>همکمک | برای کمک به هم</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #1f5eff;
+        --primary-dark: #173ecf;
+        --primary-soft: #eaf2ff;
+        --primary-soft-2: #f4f8ff;
+        --accent: #1bc98e;
+        --accent-soft: #ecfbf5;
+        --bg: #f4f8ff;
+        --surface: #ffffff;
+        --surface-alt: #eef5ff;
+        --text: #101828;
+        --text-soft: #52607a;
+        --line: rgba(17, 24, 39, 0.08);
+        --shadow: 0 18px 45px rgba(31, 94, 255, 0.12);
+        --radius: 26px;
+      }
 
-    .qr-toggle {
-      position: fixed;
-      z-index: 21;
-      top: max(74px, calc(env(safe-area-inset-top) + 74px));
-      left: max(10px, env(safe-area-inset-left));
-      min-width: 120px;
-      padding: 10px 14px;
-      border: 1px solid rgba(116, 233, 255, .52);
-      border-radius: 12px;
-      background: linear-gradient(135deg, rgba(19, 36, 82, .96), rgba(31, 123, 145, .92));
-      color: #eefbff;
-      font: 700 14px Tahoma, sans-serif;
-      box-shadow: 0 8px 22px rgba(0,0,0,.28);
-      cursor: pointer;
-    }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        font-family: "Vazirmatn", sans-serif;
+        background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+        color: var(--text);
+      }
+      a { color: inherit; text-decoration: none; }
+      img { max-width: 100%; display: block; }
+      button { font: inherit; }
 
-    .qr-modal {
-      position: fixed;
-      inset: 0;
-      z-index: 999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(4, 7, 18, .72);
-      backdrop-filter: blur(4px);
-      padding: 18px;
-    }
+      .container {
+        width: min(1180px, calc(100% - 36px));
+        margin: 0 auto;
+      }
 
-    .qr-modal.hidden { display: none; }
+      .header {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(17, 24, 39, 0.05);
+      }
 
-    .qr-card {
-      width: min(420px, 92vw);
-      background: linear-gradient(180deg, rgba(17, 25, 52, .98), rgba(20, 31, 74, .95));
-      border: 1px solid rgba(138, 190, 255, .34);
-      border-radius: 22px;
-      box-shadow: 0 18px 44px rgba(0,0,0,.38);
-      overflow: hidden;
-    }
+      .nav {
+        min-height: 82px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
 
-    .qr-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 14px 16px 10px;
-      border-bottom: 1px solid rgba(157, 181, 255, .18);
-      color: #ebf5ff;
-    }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        font-size: 1.35rem;
+        color: var(--primary-dark);
+      }
 
-    .qr-head h3 {
-      margin: 0;
-      font: 700 20px Tahoma, sans-serif;
-    }
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, var(--primary) 0%, #6ea5ff 100%);
+        color: white;
+        box-shadow: 0 16px 26px rgba(31, 94, 255, 0.28);
+      }
 
-    .qr-close {
-      width: 38px;
-      height: 38px;
-      border: 1px solid rgba(194, 218, 255, .28);
-      border-radius: 10px;
-      background: rgba(255,255,255,.04);
-      color: white;
-      cursor: pointer;
-      font: 700 22px Tahoma, sans-serif;
-    }
+      .nav-menu {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        color: var(--text-soft);
+        font-weight: 500;
+      }
 
-    .qr-body {
-      padding: 12px 16px 10px;
-    }
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
 
-    .qr-stage {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      background: #090e1d;
-      border: 1px solid rgba(105, 146, 255, .3);
-      border-radius: 16px;
-      overflow: hidden;
-    }
+      .btn {
+        border: none;
+        border-radius: 14px;
+        padding: 14px 22px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .btn:hover { transform: translateY(-1px); }
 
-    #qrVideo, #qrCanvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      background: #0b142e;
-    }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, #5a86ff 100%);
+        color: white;
+        box-shadow: 0 18px 30px rgba(31, 94, 255, 0.25);
+      }
 
-    #qrCanvas {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      pointer-events: none;
-    }
+      .btn-secondary {
+        background: white;
+        color: var(--primary-dark);
+        border: 1px solid rgba(31, 94, 255, 0.12);
+      }
 
-    .qr-status {
-      margin: 12px 0 0;
-      color: #dfeaff;
-      font: 14px Tahoma, sans-serif;
-      line-height: 1.7;
-      min-height: 48px;
-    }
+      .hero {
+        padding: 64px 0 36px;
+      }
 
-    .qr-actions {
-      display: flex;
-      gap: 8px;
-      padding: 0 16px 16px;
-      flex-wrap: wrap;
-    }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: 42px;
+        align-items: center;
+      }
 
-    .qr-actions button {
-      flex: 1;
-      min-height: 42px;
-      border: 0;
-      border-radius: 12px;
-      cursor: pointer;
-      font: 700 14px Tahoma, sans-serif;
-    }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--primary-soft);
+        color: var(--primary-dark);
+        border: 1px solid rgba(31, 94, 255, 0.1);
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
 
-    .qr-actions .primary {
-      background: linear-gradient(120deg, #5d5cff, #15b7d8);
-      color: white;
-    }
+      .eyebrow-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 7px rgba(27, 201, 142, 0.12);
+      }
 
-    .qr-actions .secondary {
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(185, 206, 255, .25);
-      color: #edf7ff;
-    }
+      h1 {
+        margin: 18px 0 16px;
+        font-size: clamp(2.7rem, 4vw, 4.5rem);
+        line-height: 1.12;
+        letter-spacing: -0.05em;
+      }
 
-    @media (max-width: 480px) {
-      .zoom-controls { gap: 5px; padding: 6px 7px; font-size: 12px; }
-      .zoom-controls input[type="range"] { width: 82px; }
-      .zoom-controls button { min-width: 29px; height: 29px; }
-      .qr-toggle { top: max(72px, calc(env(safe-area-inset-top) + 72px)); }
-      .qr-head h3 { font-size: 18px; }
-    }
-  </style>
-</head>
-<body>
-  <div class="zoom-controls" role="group" aria-label="تنظیم اندازهٔ صفحه">
-    <label for="zoomRange">اندازهٔ صفحه</label>
-    <button id="zoomOut" type="button" aria-label="کوچک‌تر کردن صفحه">−</button>
-    <input id="zoomRange" type="range" min="70" max="120" step="5" value="100" aria-label="بزرگ‌نمایی صفحه">
-    <button id="zoomIn" type="button" aria-label="بزرگ‌تر کردن صفحه">+</button>
-    <output id="zoomValue" for="zoomRange">100٪</output>
-    <button id="zoomReset" type="button" aria-label="بازگردانی اندازه به ۱۰۰ درصد">↺</button>
-  </div>
+      .highlight { color: var(--primary); }
 
-  <button class="qr-toggle" id="qrToggle" type="button">📷 اسکن QR</button>
+      .lead {
+        max-width: 610px;
+        margin: 0;
+        font-size: 1.08rem;
+        line-height: 2;
+        color: var(--text-soft);
+      }
 
-  <div class="qr-modal hidden" id="qrModal" aria-modal="true" role="dialog" aria-labelledby="qrDialogTitle">
-    <div class="qr-card">
-      <div class="qr-head">
-        <h3 id="qrDialogTitle">اسکن QR</h3>
-        <button class="qr-close" id="closeQrModal" type="button" aria-label="بستن اسکنر">✕</button>
-      </div>
-      <div class="qr-body">
-        <div class="qr-stage">
-          <video id="qrVideo" autoplay playsinline muted></video>
-          <canvas id="qrCanvas" width="320" height="320"></canvas>
+      .hero-actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 28px;
+      }
+
+      .mini-proof {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 26px;
+        color: var(--text-soft);
+        font-size: 0.95rem;
+      }
+
+      .stars { color: #ffbf33; letter-spacing: 2px; }
+
+      .hero-card {
+        position: relative;
+        background: linear-gradient(180deg, #ffffff 0%, #edf4ff 100%);
+        border: 1px solid var(--line);
+        border-radius: 30px;
+        padding: 24px;
+        box-shadow: var(--shadow);
+      }
+
+      .dashboard {
+        background: linear-gradient(180deg, #f6f9ff 0%, #ffffff 100%);
+        border: 1px solid rgba(31, 94, 255, 0.08);
+        border-radius: 24px;
+        padding: 20px;
+        min-height: 540px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 14px;
+      }
+
+      .dots {
+        display: flex;
+        gap: 8px;
+      }
+      .dots span {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .dots span:nth-child(1) { background: #ff5f57; }
+      .dots span:nth-child(2) { background: #ffbd2f; }
+      .dots span:nth-child(3) { background: #28c840; }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 10px;
+      }
+
+      .stat-box {
+        background: white;
+        border: 1px solid rgba(31, 94, 255, 0.08);
+        border-radius: 18px;
+        padding: 18px 16px;
+      }
+
+      .stat-number {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--primary-dark);
+        margin-bottom: 4px;
+      }
+
+      .stat-label {
+        color: var(--text-soft);
+        font-size: 0.9rem;
+      }
+
+      .list-card {
+        background: white;
+        border-radius: 18px;
+        border: 1px solid rgba(31, 94, 255, 0.08);
+        padding: 16px;
+        margin-top: 18px;
+      }
+
+      .list-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        font-weight: 700;
+      }
+
+      .task {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+      }
+      .task:last-child { border-bottom: none; }
+
+      .task-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+      }
+
+      .badge {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 6px rgba(27, 201, 142, 0.12);
+      }
+
+      .tag {
+        background: var(--accent-soft);
+        color: #0f8b63;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 700;
+      }
+
+      section { padding: 42px 0; }
+
+      .section-header {
+        text-align: center;
+        margin-bottom: 28px;
+      }
+
+      .section-label {
+        display: inline-block;
+        background: var(--primary-soft);
+        color: var(--primary-dark);
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      h2 {
+        margin: 18px 0 10px;
+        font-size: clamp(2rem, 3vw, 3rem);
+        line-height: 1.2;
+        letter-spacing: -0.04em;
+      }
+
+      .section-subtitle {
+        max-width: 700px;
+        margin: 0 auto;
+        color: var(--text-soft);
+        line-height: 2;
+        font-size: 1.02rem;
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 22px;
+        margin-top: 34px;
+      }
+
+      .feature-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 28px 22px;
+        box-shadow: 0 10px 22px rgba(17, 24, 39, 0.03);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .feature-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 18px 34px rgba(31, 94, 255, 0.08);
+      }
+
+      .feature-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, var(--primary-soft) 0%, #dfeaff 100%);
+        color: var(--primary-dark);
+        font-size: 1.6rem;
+        margin-bottom: 18px;
+      }
+
+      .feature-card h3 {
+        margin: 0 0 12px;
+        font-size: 1.2rem;
+      }
+
+      .feature-card p {
+        margin: 0;
+        color: var(--text-soft);
+        line-height: 2;
+        font-size: 0.97rem;
+      }
+
+      .stats-band {
+        padding-top: 16px;
+      }
+
+      .band {
+        background: linear-gradient(135deg, #0d2d86 0%, #1d4dd8 100%);
+        border-radius: 30px;
+        padding: 28px 20px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 20px;
+        color: white;
+        box-shadow: 0 20px 42px rgba(28, 69, 177, 0.25);
+      }
+
+      .band-item {
+        text-align: center;
+      }
+
+      .band-item strong {
+        display: block;
+        font-size: clamp(2rem, 2.3vw, 2.8rem);
+        font-weight: 800;
+      }
+
+      .band-item span {
+        color: rgba(255, 255, 255, 0.82);
+        font-weight: 500;
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+        margin-top: 36px;
+      }
+
+      .step {
+        position: relative;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 30px 22px;
+        overflow: hidden;
+      }
+
+      .step::before {
+        content: attr(data-step);
+        position: absolute;
+        top: 16px;
+        left: 18px;
+        font-size: 3.2rem;
+        font-weight: 800;
+        line-height: 1;
+        color: rgba(31, 94, 255, 0.08);
+      }
+
+      .step h3 {
+        margin: 28px 0 10px;
+        font-size: 1.22rem;
+      }
+
+      .step p {
+        margin: 0;
+        color: var(--text-soft);
+        line-height: 2;
+      }
+
+      .testimonials {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+        margin-top: 36px;
+      }
+
+      .quote {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 24px;
+        box-shadow: 0 10px 20px rgba(17, 24, 39, 0.03);
+      }
+
+      .quote p {
+        margin: 0 0 18px;
+        color: var(--text-soft);
+        line-height: 2.1;
+      }
+
+      .person {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .avatar {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #d7e8ff 0%, #a2c3ff 100%);
+        display: grid;
+        place-items: center;
+        color: var(--primary-dark);
+        font-weight: 800;
+      }
+
+      .person small {
+        display: block;
+        color: var(--text-soft);
+      }
+
+      .cta {
+        padding-bottom: 80px;
+      }
+
+      .cta-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+        background: linear-gradient(135deg, #f4f8ff 0%, #edf5ff 100%);
+        border: 1px solid rgba(31, 94, 255, 0.08);
+        border-radius: 30px;
+        padding: 40px 32px;
+      }
+
+      .cta-box h3 {
+        margin: 0 0 8px;
+        font-size: clamp(1.8rem, 2.3vw, 2.8rem);
+      }
+
+      .cta-box p {
+        margin: 0;
+        color: var(--text-soft);
+        line-height: 1.9;
+      }
+
+      .footer {
+        background: #0f172a;
+        color: rgba(255,255,255,0.8);
+        padding: 24px 0;
+      }
+
+      .footer-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 980px) {
+        .hero-grid,
+        .features,
+        .steps,
+        .testimonials {
+          grid-template-columns: 1fr 1fr;
+        }
+        .hero-grid { grid-template-columns: 1fr; }
+        .band { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+
+      @media (max-width: 720px) {
+        .nav-menu { display: none; }
+        .features,
+        .steps,
+        .testimonials,
+        .band { grid-template-columns: 1fr; }
+        .cta-box { align-items: flex-start; }
+        .nav-actions { gap: 8px; }
+        .btn { padding: 12px 16px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="container nav">
+        <div class="brand" aria-label="لوگو و نام همکمک">
+          <div class="brand-mark">ه</div>
+          <span>همکمک</span>
         </div>
-        <p id="qrStatus" class="qr-status">دوربین را روشن کن و کد QR را در داخل کادر نگه دار.</p>
+
+        <nav class="nav-menu" aria-label="منوی اصلی">
+          <a href="#features">ویژگی‌ها</a>
+          <a href="#how">چطور کار می‌کند</a>
+          <a href="#reviews">نظرات</a>
+          <a href="#about">درباره ما</a>
+        </nav>
+
+        <div class="nav-actions">
+          <button class="btn btn-secondary" type="button">ورود</button>
+          <button class="btn btn-primary" type="button">شروع کنید</button>
+        </div>
       </div>
-      <div class="qr-actions">
-        <button type="button" class="primary" id="startQrScan">شروع اسکن</button>
-        <button type="button" class="secondary" id="stopQrScan">توقف</button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-grid">
+          <div>
+            <div class="eyebrow">
+              <span class="eyebrow-dot"></span>
+              <span>کمک، هم‌زمان با رشد</span>
+            </div>
+
+            <h1>
+              برای <span class="highlight">کمک</span> به هم، فقط یک گام فاصله داریم
+            </h1>
+
+            <p class="lead">
+              همکمک فضایی برای همکاری‌های هدفمند است؛ جایی که نیازها پیدا می‌شوند، افراد
+              به هم می‌پیوندند و دست‌به‌دست هم برای یک نتیجه بهتر حرکت می‌کنند.
+            </p>
+
+            <div class="hero-actions">
+              <button class="btn btn-primary" type="button">هم‌اکنون شروع کنید</button>
+              <button class="btn btn-secondary" type="button">مشاهده‌ی ویدئو</button>
+            </div>
+
+            <div class="mini-proof">
+              <span class="stars">★★★★★</span>
+              <span>بیش از ۱۲ هزار کاربر فعال و ۲۴۵۰ پروژه در حال اجرا</span>
+            </div>
+          </div>
+
+          <div class="hero-card" aria-label="داشبورد همکمک">
+            <div class="dashboard">
+              <div class="topbar">
+                <div class="dots" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div style="font-weight:700; color:#56657c;">داشبورد</div>
+              </div>
+
+              <div class="stats-grid">
+                <div class="stat-box">
+                  <div class="stat-number">۲۴۵۰</div>
+                  <div class="stat-label">پروژه فعال</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-number">۸۹٪</div>
+                  <div class="stat-label">رضایت کاربران</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-number">۳۶۰</div>
+                  <div class="stat-label">نیاز جدید</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-number">۱۸۰</div>
+                  <div class="stat-label">حامی فعال</div>
+                </div>
+              </div>
+
+              <div class="list-card">
+                <div class="list-head">
+                  <span>پروژه‌های فعال</span>
+                  <span style="color:#6b7280;">امروز</span>
+                </div>
+
+                <div class="task">
+                  <div class="task-left">
+                    <span class="badge"></span>
+                    ساخت کلاس آموزشی
+                  </div>
+                  <span class="tag">در حال اجرا</span>
+                </div>
+
+                <div class="task">
+                  <div class="task-left">
+                    <span class="badge"></span>
+                    کمک به خانواده‌های نیازمند
+                  </div>
+                  <span class="tag">در حال اجرا</span>
+                </div>
+
+                <div class="task">
+                  <div class="task-left">
+                    <span class="badge"></span>
+                    جمع‌آوری کمک‌های نقدی
+                  </div>
+                  <span class="tag">در انتظار</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="features">
+        <div class="container">
+          <div class="section-header">
+            <span class="section-label">ویژگی‌ها</span>
+            <h2>همکاری آسان‌تر، نتیجه بهتر</h2>
+            <p class="section-subtitle">
+              همه چیز برای اینکه افراد، تیم‌ها و نهادها به‌راحتی بتوانند در یک مسیر مشترک
+              همکاری کنند، در همکمک کنار هم قرار گرفته است.
+            </p>
+          </div>
+
+          <div class="features">
+            <article class="feature-card">
+              <div class="feature-icon">🤝</div>
+              <h3>همکاری ساده</h3>
+              <p>در یک محیط شفاف، پروژه‌ها، نیازها و پیشنهادها به‌سادگی با هم همراستا می‌شوند.</p>
+            </article>
+
+            <article class="feature-card">
+              <div class="feature-icon">📊</div>
+              <h3>پیگیری دقیق</h3>
+              <p>پیشرفت پروژه‌ها به‌صورت لحظه‌ای و دقیق قابل‌مشاهده است؛ از شروع تا نتیجه‌گیری.</p>
+            </article>
+
+            <article class="feature-card">
+              <div class="feature-icon">🔐</div>
+              <h3>امنیت و اعتماد</h3>
+              <p>سطح دسترسی، نقش‌ها و مسئولیت‌ها کاملاً مشخص هستند تا احساس اطمینان حفظ شود.</p>
+            </article>
+
+            <article class="feature-card">
+              <div class="feature-icon">⚡</div>
+              <h3>سرعت در اجرا</h3>
+              <p>با کمترین پیچیدگی، ایده‌ها به‌سرعت به اقدام تبدیل می‌شوند و تیم‌ها فعال می‌مانند.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-band">
+        <div class="container">
+          <div class="band">
+            <div class="band-item">
+              <strong>۱۲۰k</strong>
+              <span>مشارکت‌کننده</span>
+            </div>
+            <div class="band-item">
+              <strong>۴۵۰</strong>
+              <span>پروژه موفق</span>
+            </div>
+            <div class="band-item">
+              <strong>۹۸٪</strong>
+              <span>رضایت کاربران</span>
+            </div>
+            <div class="band-item">
+              <strong>۲.۴x</strong>
+              <span>افزایش همکاری</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="how">
+        <div class="container">
+          <div class="section-header">
+            <span class="section-label">چطور کار می‌کند</span>
+            <h2>از ایده تا اجرا، خیلی ساده‌تر</h2>
+          </div>
+
+          <div class="steps">
+            <article class="step" data-step="01">
+              <h3>ثبت نیاز یا پروژه</h3>
+              <p>نیاز خود را ثبت کنید یا پروژه‌ای برای کمک‌طلبی بسازید و با شفافیت کامل در مسیر درست قرار بگیرید.</p>
+            </article>
+
+            <article class="step" data-step="02">
+              <h3>جذب مشارکت</h3>
+              <p>حامی‌ها، داوطلب‌ها و تیم‌ها در یک نگاه به پروژه متصل می‌شوند و نقش خود را مشخص می‌کنند.</p>
+            </article>
+
+            <article class="step" data-step="03">
+              <h3>پیگیری و نتیجه</h3>
+              <p>با داشبورد شفاف، پیشرفت، مشارکت و نتیجه نهایی برای همه به‌راحتی قابل‌دیدن است.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="reviews">
+        <div class="container">
+          <div class="section-header">
+            <span class="section-label">نظرات</span>
+            <h2>کسانی که تجربه کرده‌اند</h2>
+          </div>
+
+          <div class="testimonials">
+            <article class="quote">
+              <p>«دقیقا همان چیزی بود که برای هماهنگی تیم‌های داوطلب و پروژه‌های اجتماعی نیاز داشتیم. ساده، شفاف و سریع.»</p>
+              <div class="person">
+                <div class="avatar">ن</div>
+                <div>
+                  <strong>نوشین م.</strong>
+                  <small>مدیر پروژه</small>
+                </div>
+              </div>
+            </article>
+
+            <article class="quote">
+              <p>«همکمک به ما کمک کرد با کمترین دردسر، پروژه‌های خیریه را هماهنگ کنیم و پیشرفت کار را دنبال کنیم.»</p>
+              <div class="person">
+                <div class="avatar">ع</div>
+                <div>
+                  <strong>علی ر.</strong>
+                  <small>حامی اجتماعی</small>
+                </div>
+              </div>
+            </article>
+
+            <article class="quote">
+              <p>«رابط کاربری روان و حرفه‌ای است و حس اعتماد در آن به‌وضوح دیده می‌شود. استفاده از آن واقعا لذت‌بخش است.»</p>
+              <div class="person">
+                <div class="avatar">س</div>
+                <div>
+                  <strong>سارا ک.</strong>
+                  <small>مسئول تیم</small>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta" id="about">
+        <div class="container">
+          <div class="cta-box">
+            <div>
+              <h3>برای شروع همکاری، همین حالا آماده‌اید؟</h3>
+              <p>همکمک فضایی برای ساختن همکاری‌های مؤثر و هدفمند است؛ جایی که همدیگر را بهتر می‌شناسیم و بیشتر کمک می‌کنیم.</p>
+            </div>
+            <button class="btn btn-primary" type="button">ثبت نام رایگان</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <div>© <span id="year">2026</span> همکمک</div>
+        <div>همه حقوق محفوظ است</div>
       </div>
-    </div>
-  </div>
+    </footer>
 
-  <iframe id="hamkomakApp" title="وب‌سایت همکمک پایهٔ هفتم" src="./Hamkomak_2_4_Grades_1_to_7_Coding-1.html"></iframe>
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-  <script>
-    const appFrame = document.getElementById("hamkomakApp");
-    const zoomRange = document.getElementById("zoomRange");
-    const zoomValue = document.getElementById("zoomValue");
-    const ZOOM_KEY = "hamkomak_site_zoom_v1";
-    let appDocument = null;
-
-    function setZoom(value) {
-      const zoom = Math.min(120, Math.max(70, Number(value) || 100));
-      zoomRange.value = String(zoom);
-      zoomValue.value = `${zoom}٪`;
-      zoomValue.textContent = `${zoom}٪`;
-      try { localStorage.setItem(ZOOM_KEY, String(zoom)); } catch (error) {}
-      if (appDocument) appDocument.documentElement.style.zoom = `${zoom}%`;
-    }
-
-    zoomRange.addEventListener("input", () => setZoom(zoomRange.value));
-    document.getElementById("zoomOut").addEventListener("click", () => setZoom(Number(zoomRange.value) - 5));
-    document.getElementById("zoomIn").addEventListener("click", () => setZoom(Number(zoomRange.value) + 5));
-    document.getElementById("zoomReset").addEventListener("click", () => setZoom(100));
-
-    try {
-      const savedZoom = localStorage.getItem(ZOOM_KEY);
-      if (savedZoom) setZoom(savedZoom);
-    } catch (error) {}
-
-    appFrame.addEventListener("load", () => {
-      try {
-        appDocument = appFrame.contentDocument;
-        appDocument.documentElement.style.zoom = `${zoomRange.value}%`;
-
-        const gradeSelect = appDocument.getElementById("gradeSelect");
-        if (gradeSelect) {
-          Array.from(gradeSelect.options).forEach(option => {
-            if (option.value !== "7") option.remove();
-          });
-          gradeSelect.value = "7";
-          gradeSelect.disabled = true;
-          gradeSelect.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-
-        const webGrade = appDocument.getElementById("webGrade");
-        if (webGrade) {
-          Array.from(webGrade.options).forEach(option => {
-            if (option.value !== "هفتم") option.remove();
-          });
-          webGrade.value = "هفتم";
-          webGrade.disabled = true;
-          webGrade.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-
-        const notice = appDocument.getElementById("gradeNotice");
-        if (notice) notice.textContent = "پایهٔ هفتم فعال است. محتوای این سایت ویژهٔ کلاس هفتم است.";
-      } catch (error) {
-        console.error("امکان تنظیم پایهٔ هفتم فراهم نشد.", error);
-      }
-    });
-
-    const qrModal = document.getElementById("qrModal");
-    const qrToggle = document.getElementById("qrToggle");
-    const closeQrModal = document.getElementById("closeQrModal");
-    const startQrScan = document.getElementById("startQrScan");
-    const stopQrScan = document.getElementById("stopQrScan");
-    const qrVideo = document.getElementById("qrVideo");
-    const qrCanvas = document.getElementById("qrCanvas");
-    const qrStatus = document.getElementById("qrStatus");
-    const ctx = qrCanvas.getContext("2d");
-    let qrStream = null;
-    let qrInterval = null;
-    let lastQrResult = null;
-
-    function openQrModal() {
-      qrModal.classList.remove("hidden");
-    }
-
-    function closeQrModalUI() {
-      qrModal.classList.add("hidden");
-      stopQrScanner();
-    }
-
-    function updateQrStatus(message) {
-      qrStatus.textContent = message;
-    }
-
-    function stopQrScanner() {
-      if (qrInterval) {
-        clearInterval(qrInterval);
-        qrInterval = null;
-      }
-      if (qrStream) {
-        qrStream.getTracks().forEach(track => track.stop());
-        qrStream = null;
-      }
-      if (qrVideo) {
-        qrVideo.srcObject = null;
-      }
-      lastQrResult = null;
-    }
-
-    async function startQrScanner() {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        updateQrStatus("دستگاه شما اجازهٔ استفاده از دوربین را ندارد. لطفاً از مرورگرهای Chrome یا Edge استفاده کن.");
-        return;
-      }
-
-      try {
-        qrStream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          }
-        });
-
-        qrVideo.srcObject = qrStream;
-        qrVideo.play();
-        updateQrStatus("دوربین روشن شد. QR code را در کادر قرار بده.");
-
-        qrInterval = setInterval(() => {
-          if (!qrVideo.videoWidth || !qrVideo.videoHeight) return;
-          qrCanvas.width = qrVideo.videoWidth;
-          qrCanvas.height = qrVideo.videoHeight;
-          ctx.drawImage(qrVideo, 0, 0, qrCanvas.width, qrCanvas.height);
-          const imageData = ctx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
-          const code = window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-          if (code && code.data) {
-            if (lastQrResult !== code.data) {
-              lastQrResult = code.data;
-              updateQrStatus(`کد پیدا شد: ${code.data}`);
-              if (code.data.startsWith("http://") || code.data.startsWith("https://")) {
-                window.open(code.data, "_blank", "noopener,noreferrer");
-              }
-              setTimeout(() => {
-                stopQrScanner();
-                closeQrModalUI();
-              }, 1500);
-            }
-          }
-        }, 250);
-      } catch (error) {
-        updateQrStatus("امکان دسترسی به دوربین وجود ندارد. اجازهٔ دوربین را فعال کن یا مرورگر را مجدداً باز کن.");
-        console.error("QR scan error:", error);
-      }
-    }
-
-    qrToggle.addEventListener("click", () => {
-      openQrModal();
-      startQrScanner();
-    });
-
-    closeQrModal.addEventListener("click", closeQrModalUI);
-    startQrScan.addEventListener("click", startQrScanner);
-    stopQrScan.addEventListener("click", () => {
-      stopQrScanner();
-      updateQrStatus("اسکن متوقف شد. دوباره شروع کن.");
-    });
-
-    qrModal.addEventListener("click", (event) => {
-      if (event.target === qrModal) closeQrModalUI();
-    });
-  </script>
-</body>
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+  </body>
 </html>
